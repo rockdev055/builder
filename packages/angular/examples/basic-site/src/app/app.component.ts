@@ -1,6 +1,5 @@
 import { BuilderBlock } from '@builder.io/angular';
 import { Component, Input } from '@angular/core';
-import { GetContentOptions } from '@builder.io/sdk';
 
 @BuilderBlock({
   tag: 'custom-thing',
@@ -29,7 +28,6 @@ export class CustomThing {
 })
 export class AppComponent {
   title = 'app';
-  options: GetContentOptions;
 
   data = {
     property: 'hello',
