@@ -1,6 +1,6 @@
 {
   "name": "@builder.io/plugin-cloudinary",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "keywords": [],
   "main": "dist/builder-plugin-cloudinary.umd.js",
@@ -24,6 +24,7 @@
     "prebuild": "rimraf dist",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts",
     "release:dev": "npm run build && npm version prerelease --no-git-tag-version && npm publish --tag dev",
+    "release:patch": "npm run build && npm version patch && npm publish",
     "start": "cross-env SERVE=true rollup -c rollup.config.ts -w",
     "test": "jest -c jest.config.js",
     "test:watch": "jest -c jest.config.js --watch",
@@ -102,7 +103,7 @@
     "typescript": "^3.0.3"
   },
   "dependencies": {
-    "@builder.io/sdk": "^1.0.51-alpha.2",
+    "@builder.io/sdk": "^1.0.51-alpha.3",
     "@emotion/core": "^10.0.22",
     "@emotion/styled": "^10.0.23",
     "@material-ui/core": "^3.9.2",
