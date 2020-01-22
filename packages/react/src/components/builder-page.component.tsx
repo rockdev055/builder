@@ -114,7 +114,6 @@ export interface BuilderPageProps {
   builderBlock?: BuilderElement
   dataOnly?: boolean
   hydrate?: boolean
-  context?: any
 }
 
 export interface BuilderPageState {
@@ -265,7 +264,7 @@ export class BuilderPage extends React.Component<
     // this.asServer = Boolean(props.hydrate && Builder.isBrowser)
 
     this.state = {
-      context: props.context || {},
+      context: {},
       state: Object.assign(this.rootState, {
         ...(this.props.content &&
           this.props.content.data &&
@@ -1030,11 +1029,6 @@ export class BuilderPage extends React.Component<
       if (!data.state) {
         data.state = {}
       }
-
-      // Maybe...
-      // if (data.context) {
-      //   Object.assign(this.state.context, data.context)
-      // }
       // TODO: may not want this... or make sure anything overriden
       // explitily sets to null
       data.inputs.forEach((input: any) => {

@@ -6,22 +6,21 @@ interface JSONObject {
 
 interface JSONArray extends Array<JSONValue> {}
 
-/** @todo typedoc this */
+// TODO: typedoc this
 export interface BuilderElement {
   '@type': '@builder.io/sdk:Element';
   '@version'?: number;
   id?: string;
   tagName?: string;
   layerName?: string;
-  groupLocked?: boolean;
-  /** @todo make alias for properties.class */
+  // TODO: make alias for properties.class
   class?: string;
   children?: BuilderElement[];
   responsiveStyles?: {
     large?: Partial<CSSStyleDeclaration>;
     medium?: Partial<CSSStyleDeclaration>;
     small?: Partial<CSSStyleDeclaration>;
-    /** @deprecated */
+    // DEPRECATED
     xsmall?: Partial<CSSStyleDeclaration>;
   };
   component?: {
@@ -33,7 +32,7 @@ export interface BuilderElement {
     [key: string]: string;
   };
   meta?: {
-    [key: string]: JSONValue; 
+    [key: string]: JSONValue; // JSON
   };
   actions?: {
     [key: string]: string;
