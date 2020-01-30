@@ -27,8 +27,6 @@ export interface SymbolProps {
 }
 
 class SymbolComponent extends React.Component<SymbolProps> {
-  ref: BuilderPage | null = null
-
   get placeholder() {
     return (
       <div css={{ padding: 10 }}>
@@ -96,8 +94,6 @@ class SymbolComponent extends React.Component<SymbolProps> {
                 this.placeholder
               ) : (
                 <BuilderPage
-                  ref={ref => (this.ref = ref)}
-                  context={{ ...state.context }}
                   modelName={model}
                   entry={entry}
                   data={data}

@@ -10,7 +10,6 @@ export interface BuilderContentVariation {
   };
   name?: string;
   testRatio?: number;
-  id?: string;
 }
 
 // TODO: separate full and partial versions

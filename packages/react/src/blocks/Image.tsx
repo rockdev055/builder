@@ -79,9 +79,7 @@ class ImageComponent extends React.Component<any> {
       return undefined
     }
 
-    // We can auto add srcset for cdn.builder.io images, otherwise you can supply
-    // this prop manually
-    if (!url.match(/builder\.io/)) {
+    if (!url.match(/cdn\.shopify|builder\.io/)) {
       return undefined
     }
 
@@ -100,12 +98,12 @@ class ImageComponent extends React.Component<any> {
     let srcset = this.props.srcset
     const image = this.props.image
 
-    if (srcset && image && image.includes('builder.io/api/v1/image')) {
+    if (srcset && image && image.includes('/api/v1/image')) {
       if (!srcset.includes(image.split('?')[0])) {
         console.debug('Removed given srcset')
         srcset = this.getSrcSet()
       }
-    } else if (image && !srcset) {
+    } else if (image) {
       srcset = this.getSrcSet()
     }
 

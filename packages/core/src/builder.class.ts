@@ -13,6 +13,7 @@ import { omit } from './functions/omit.function';
 import serverOnlyRequire from './functions/server-only-require.function';
 
 export type Url = any;
+
 export const isReactNative = typeof navigator === 'object' && navigator.product === 'ReactNative';
 
 const urlParser = {
@@ -228,9 +229,10 @@ type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U>
     ? Array<DeepPartial<U>>
     : T[P] extends ReadonlyArray<infer U>
-    ? ReadonlyArray<DeepPartial<U>>
-    : DeepPartial<T[P]>;
+      ? ReadonlyArray<DeepPartial<U>>
+      : DeepPartial<T[P]>
 };
+
 
 export interface InsertMenuItem {
   name: string;
@@ -341,7 +343,7 @@ export class Builder {
   }
 
   static fields(name: string, fields: Input[]) {
-    window.parent?.postMessage(
+    window.parent.postMessage(
       {
         type: 'builder.fields',
         data: { name, fields },
@@ -377,7 +379,7 @@ export class Builder {
   // work but is async...
   static isEditing = Boolean(
     isIframe &&
-      ((document.referrer && document.referrer.match(/builder\.io|localhost:1234/)) ||
+      (document.referrer.match(/builder\.io|localhost:1234/) ||
         location.search.indexOf('builder.frameEditing=') !== -1)
   );
 
@@ -446,7 +448,7 @@ export class Builder {
     this.addComponent(spec);
     if (isBrowser) {
       const sendSpec = this.prepareComponentSpecToSend(spec);
-      window.parent?.postMessage(
+      window.parent.postMessage(
         {
           type: 'builder.registerComponent',
           data: sendSpec,
@@ -482,7 +484,7 @@ export class Builder {
       const sendSpec = this.prepareComponentSpecToSend(spec as Component);
       // TODO: serialize component name and inputs
       if (isBrowser) {
-        window.parent?.postMessage(
+        window.parent.postMessage(
           {
             type: 'builder.registerComponent',
             data: sendSpec,
@@ -525,7 +527,7 @@ export class Builder {
     });
   }
 
-  env: 'production' | 'qa' | 'development' | 'dev' | 'cdn-qa' | string = 'production';
+  env: 'production' | 'qa' | 'development' | 'dev' | 'cdn-qa' = 'production';
 
   protected isUsed = false;
   sessionId = this.getSessionId();
@@ -990,7 +992,7 @@ export class Builder {
   }
 
   private messageFrameLoaded() {
-    window.parent?.postMessage(
+    window.parent.postMessage(
       {
         type: 'builder.loaded',
         data: {
@@ -1007,14 +1009,14 @@ export class Builder {
     if (isBrowser) {
       addEventListener('message', event => {
         const url = parse(event.origin);
-        if (
-          !(
-            url.hostname &&
-            (url.hostname === 'builder.io' ||
-              url.hostname.endsWith('.builder.io') ||
-              url.hostname === 'localhost')
-          )
-        ) {
+        const allowedHosts = [
+          'builder.io',
+          'localhost',
+          'local.builder.io',
+          'qa.builder.io',
+          'beta.builder.io',
+        ];
+        if (allowedHosts.indexOf(url.hostname as string) === -1) {
           return;
         }
 
@@ -1022,7 +1024,7 @@ export class Builder {
         if (data) {
           switch (data.type) {
             case 'builder.ping': {
-              window.parent?.postMessage(
+              window.parent.postMessage(
                 {
                   type: 'builder.pong',
                   data: {},
@@ -1069,7 +1071,7 @@ export class Builder {
               break;
 
             case 'builder.getComponents':
-              window.parent?.postMessage(
+              window.parent.postMessage(
                 {
                   type: 'builder.components',
                   data: Builder.components.map(item => Builder.prepareComponentSpecToSend(item)),
@@ -1138,7 +1140,7 @@ export class Builder {
               }
 
               if (error) {
-                window.parent?.postMessage(
+                window.parent.postMessage(
                   {
                     type: 'builder.evaluateError',
                     data: { id, error: error.message },
@@ -1149,7 +1151,7 @@ export class Builder {
                 if (result && typeof result.then === 'function') {
                   (result as Promise<any>)
                     .then(finalResult => {
-                      window.parent?.postMessage(
+                      window.parent.postMessage(
                         {
                           type: 'builder.evaluateResult',
                           data: { id, result: finalResult },
@@ -1159,7 +1161,7 @@ export class Builder {
                     })
                     .catch(console.error);
                 } else {
-                  window.parent?.postMessage(
+                  window.parent.postMessage(
                     {
                       type: 'builder.evaluateResult',
                       data: { result, id },
@@ -1407,23 +1409,9 @@ export class Builder {
     if (this.overrideHost) {
       return this.overrideHost;
     }
-
-    if (this.env.includes('//')) {
-      return this.env;
-    }
-
-    if (this.env.includes('.')) {
-      return 'http://' + this.env;
-    }
     switch (this.env) {
       case 'qa':
         return 'https://qa.builder.io';
-      case 'fast':
-        return 'https://fast.builder.io';
-      case 'cloud':
-        return 'https://cloud.builder.io';
-      case 'cdn2':
-        return 'https://cdn2.builder.io';
       case 'cdn-qa':
         return 'https://cdn-qa.builder.io';
       case 'development':
@@ -1669,7 +1657,7 @@ export class Builder {
     });
 
     if (isIframe) {
-      window.parent?.postMessage(
+      window.parent.postMessage(
         { type: 'builder.contentResults', data: { results: mappedResults } },
         '*'
       );

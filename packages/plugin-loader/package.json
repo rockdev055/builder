@@ -1,11 +1,11 @@
 {
   "name": "@builder.io/plugin-loader",
-  "version": "0.0.16",
+  "version": "0.0.13-alpha.0",
   "description": "",
   "keywords": [],
-  "main": "dist/content-loader.umd.js",
-  "module": "dist/content-loader.es5.js",
-  "typings": "dist/types/content-loader.d.ts",
+  "main": "dist/plugin-loader.umd.js",
+  "module": "dist/plugin-loader.es5.js",
+  "typings": "dist/types/plugin-loader.d.ts",
   "files": [
     "dist"
   ],
@@ -19,7 +19,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
     "start": "SERVE=true rollup -c rollup.config.ts -w",
@@ -125,9 +125,9 @@
   },
   "dependencies": {
     "@builder.io/mobx-state-tree": "^3.14.2",
-    "@builder.io/plugin-cloudinary": "^1.0.13-alpha.1",
-    "@builder.io/react": "^1.0.111-alpha.2",
-    "@builder.io/sdk": "^1.0.60-alpha.1",
+    "@builder.io/plugin-cloudinary": "^1.0.11-alpha.0",
+    "@builder.io/react": "^1.0.109-alpha.0",
+    "@builder.io/sdk": "^1.0.58-alpha.0",
     "@emotion/core": "^10.0.22",
     "@emotion/styled": "^10.0.23",
     "@material-ui/core": "^4.7.1",

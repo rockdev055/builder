@@ -163,7 +163,6 @@ class RouterComponent extends React.Component<RouterProps> {
     // TODO: override location!
     this.preloadQueue++
 
-    // TODO: use builder from context
     const attributes = builder.getUserAttributes()
     attributes.urlPath = parsedUrl.pathname
     attributes.queryString = parsedUrl.search

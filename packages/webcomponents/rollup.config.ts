@@ -16,6 +16,7 @@ const pkg = require('./package.json')
 const SERVE = process.env.SERVE === 'true'
 const REACT = process.env.REACT === 'true'
 
+
 const port = process.env.PORT || 1267
 if (SERVE) {
   // Rollup clear console shortly after load and wipes this message,
@@ -90,9 +91,7 @@ const options = {
           'Component',
           'createElement',
           'forwardRef',
-          'Fragment',
-          'useState',
-          'useEffect'
+          'Fragment'
         ],
         './node_modules/react-dom/cjs/react-dom.development.js': [
           'render',
@@ -109,9 +108,7 @@ const options = {
           'Component',
           'createElement',
           'forwardRef',
-          'Fragment',
-          'useState',
-          'useEffect'
+          'Fragment'
         ],
         '../react/node_modules/react-is/index.js': [
           'isElement',

@@ -99,7 +99,6 @@ export interface BuilderPageProps {
   model?: string
   name?: string
   data?: any
-  builder?: Builder
   entry?: string
   apiKey?: string
   options?: GetContentOptions
@@ -234,11 +233,8 @@ export class BuilderPage extends React.Component<
   BuilderPageState
 > {
   subscriptions: Subscription = new Subscription()
-  // TODO: don't trigger initial one?
   onStateChange = new BehaviorSubject<any>(null)
   asServer = false
-
-  contentRef: BuilderContent | null = null
 
   styleRef: HTMLStyleElement | null = null
 
@@ -269,7 +265,6 @@ export class BuilderPage extends React.Component<
     // this.asServer = Boolean(props.hydrate && Builder.isBrowser)
 
     this.state = {
-      // TODO: should change if this prop changes
       context: props.context || {},
       state: Object.assign(this.rootState, {
         ...(this.props.content &&
@@ -292,8 +287,8 @@ export class BuilderPage extends React.Component<
 
     if (Builder.isBrowser) {
       const key = this.props.apiKey
-      if (key && key !== this.builder.apiKey) {
-        this.builder.apiKey = key
+      if (key && key !== builder.apiKey) {
+        builder.apiKey = key
       }
 
       if (this.props.content) {
@@ -305,10 +300,6 @@ export class BuilderPage extends React.Component<
         )
       }
     }
-  }
-
-  get builder() {
-    return this.props.builder || builder
   }
 
   getHtmlData() {
@@ -328,7 +319,7 @@ export class BuilderPage extends React.Component<
 
   // TODO: pass down with context
   get device() {
-    return this.builder.getUserAttributes().device || 'desktop'
+    return builder.getUserAttributes().device || 'desktop'
   }
 
   get locationState() {
@@ -363,7 +354,7 @@ export class BuilderPage extends React.Component<
         break
       }
       case 'builder.resetState': {
-        const { state, model } = info.data
+        const { state, model } = info.data.state
         if (model === this.name) {
           for (const key in this.rootState) {
             delete this.rootState[key]
@@ -536,7 +527,7 @@ export class BuilderPage extends React.Component<
     }
 
     if (Builder.isIframe) {
-      window.parent?.postMessage(
+      parent.postMessage(
         { type: 'builder.sdkInjected', data: { modelName: this.name } },
         '*'
       )
@@ -586,9 +577,6 @@ export class BuilderPage extends React.Component<
 
   @debounceNextTick
   notifyStateChange() {
-    if (!(this && this.state)) {
-      return;
-    }
     const nextState = this.state.state
     // TODO: only run the below once per tick...
     if (this.props.onStateChange) {
@@ -700,11 +688,14 @@ export class BuilderPage extends React.Component<
   }
 
   getCss(data: any) {
-    // if (Builder.isBrowser) {
-    //   this.ensureFontsLoaded(data)
-    // }
+    if (Builder.isBrowser) {
+      this.ensureFontsLoaded(data)
+    }
     // .replace(/([^\s]|$)&([^\w])/g, '$1' + '.some-selector' + '$2')
-    return (data.cssCode || '') + this.getFontCss(data)
+    return (
+      (data.cssCode || '') +
+      ((!Builder.isBrowser && this.getFontCss(data)) || '')
+    )
   }
 
   get data() {
@@ -773,8 +764,6 @@ export class BuilderPage extends React.Component<
       <WrapComponent
         className="builder-component"
         data-name={this.name}
-        data-timestamp={Date.now()}
-        date-source={`Rendered by Builder.io on ${new Date().toUTCString()}`}
         key={this.state.key}
         ref={ref => (this.ref = ref)}
       >
@@ -798,8 +787,6 @@ export class BuilderPage extends React.Component<
 
                   return (
                     <BuilderContent
-                      builder={this.builder}
-                      ref={ref => (this.contentRef = ref)}
                       inline={this.props.inlineContent}
                       // TODO: pass entry in
                       contentLoaded={this.onContentLoaded}
@@ -823,12 +810,11 @@ export class BuilderPage extends React.Component<
                           })
                         }
                         // TODO: loading option - maybe that is what the children is or component prop
-                        // TODO: get rid of all these wrapper divs
                         return data ? (
                           <div
                             data-builder-component={this.name}
                             data-builder-content-id={fullData.id}
-                            data-builder-variation-id={fullData.testVariationId || fullData.variationId || fullData.id}
+                            data-builder-variation-id={fullData.variationId}
                           >
                             {this.getCss(data) && (
                               <style
@@ -893,7 +879,7 @@ export class BuilderPage extends React.Component<
   }
 
   async handleRequest(propertyName: string, url: string) {
-    // TODO: Builder.isEditing = just checks if iframe and parent page is this.builder.io or localhost:1234
+    // TODO: Builder.isEditing = just checks if iframe and parent page is builder.io or localhost:1234
     if (Builder.isIframe && fetchCache[url]) {
       this.updateState(ctx => {
         ctx[propertyName] = fetchCache[url]
@@ -983,21 +969,18 @@ export class BuilderPage extends React.Component<
     if (options) {
       // TODO: unsubscribe on destroy
       this.subscriptions.add(
-        this.builder
-          .queueGetContent(options.model, options)
-          .subscribe(matches => {
-            if (matches) {
-              this.updateState(ctx => {
-                ctx[propertyName] = matches
-              })
-            }
-          })
+        builder.queueGetContent(options.model, options).subscribe(matches => {
+          if (matches) {
+            this.updateState(ctx => {
+              ctx[propertyName] = matches
+            })
+          }
+        })
       )
     }
   }
 
   onContentLoaded = (data: any) => {
-    this.state.context.builderContent = data
     // if (Builder.isBrowser) {
     //   console.debug('Builder content load', data)
     // }
@@ -1167,7 +1150,7 @@ export class BuilderPage extends React.Component<
           const url: string | undefined = data.httpRequests[key]
           if (url && (!this.data[key] || Builder.isEditing)) {
             // TODO: if Builder.isEditing and url patches https://builder.io/api/v2/content/{editingModel}
-            // Then use this.builder.get().subscribe(...)
+            // Then use builder.get().subscribe(...)
             if (Builder.isBrowser) {
               const finalUrl = this.evalExpression(url)
               if (
@@ -1184,12 +1167,12 @@ export class BuilderPage extends React.Component<
                 false &&
                 Builder.isEditing &&
                 model &&
-                this.builder.editingModel === model
+                builder.editingModel === model
               ) {
                 this.throttledHandleRequest(key, finalUrl)
                 // TODO: fix this
                 // this.subscriptions.add(
-                //   this.builder.get(model).subscribe(data => {
+                //   builder.get(model).subscribe(data => {
                 //     this.state.update((state: any) => {
                 //       state[key] = data
                 //     })
