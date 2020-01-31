@@ -16,6 +16,8 @@ if (Builder.isIframe) {
   import('@builder.io/email')
 }
 
+// 
+
 if ((process.env.NODE_ENV as string) === 'development') {
   // Must use require here as import statements are only allowed
   // to exist at the top of a file.
@@ -146,7 +148,7 @@ if (Builder.isBrowser && !customElements.get(componentName)) {
         this.prerender = prerenderAttr === 'false' ? false : this.prerender
       }
 
-      window.parent.postMessage(
+      window.parent?.postMessage(
         {
           type: 'builder.isReactSdk',
           data: { value: true }

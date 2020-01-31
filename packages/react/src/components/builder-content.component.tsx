@@ -19,12 +19,17 @@ export interface BuilderContentProps<ContentType> {
   ) => React.ReactNode
   inline?: boolean
   dataOnly?: boolean
+  builder?: Builder
 }
 
 export class BuilderContent<
   ContentType extends object = any
 > extends React.Component<BuilderContentProps<ContentType>> {
   ref: HTMLDivElement | null = null
+
+  get builder() {
+    return this.props.builder || builder
+  }
 
   state = {
     loading: true,
@@ -42,8 +47,8 @@ export class BuilderContent<
   // TODO: observe model name for changes
   componentDidMount() {
     // Temporary to test metrics diving in with bigquery and heatmaps
-    // builder.autoTrack = true;
-    // builder.env = 'development';
+    // this.builder.autoTrack = true;
+    // this.builder.env = 'development';
     this.subscribeToContent()
 
     /// REACT15ONLY if (this.ref) { this.ref.setAttribute('builder-model', this.props.modelName); }
@@ -76,7 +81,7 @@ export class BuilderContent<
                               entry.intersectionRatio > 0 &&
                               !this.trackedImpression
                             ) {
-                              builder.trackImpression(
+                              this.builder.trackImpression(
                                 match.id,
                                 match.variationId
                               )
@@ -97,7 +102,7 @@ export class BuilderContent<
                   }
                   if (!addedObserver) {
                     this.trackedImpression = true
-                    builder.trackImpression(match.id, match.variationId)
+                    this.builder.trackImpression(match.id, match.variationId)
                   }
                 }
                 this.firstLoad = false
@@ -132,7 +137,7 @@ export class BuilderContent<
       return
     }
     if (builder.autoTrack) {
-      builder.trackInteraction(
+      this.builder.trackInteraction(
         content.id,
         content.variationId,
         this.clicked,
@@ -156,8 +161,8 @@ export class BuilderContent<
     const useData =
       ((this.props.inline || !Builder.isBrowser || this.firstLoad) &&
         this.props.options &&
-          this.props.options.initialContent &&
-          this.props.options.initialContent[0]) ||
+        this.props.options.initialContent &&
+        this.props.options.initialContent[0]) ||
       data
 
     const TagName = this.props.dataOnly ? NoWrap : 'div'

@@ -9,7 +9,6 @@ import serve from 'rollup-plugin-serve'
 
 import react from 'react'
 import reactDom from 'react-dom'
-import tslib from 'tslib'
 import * as muiUtils from '@material-ui/utils'
 import * as reactIs from 'react-is'
 
@@ -19,7 +18,7 @@ const pkg = require('./package.json')
 
 const libraryName = 'plugin-loader'
 
-export default {
+const defaultConfig = {
   input: `src/${libraryName}.ts`,
   output: [
     { file: pkg.main, name: camelCase(libraryName), format: 'umd', sourcemap: true },
@@ -40,10 +39,10 @@ export default {
       // include: 'node_modules/**',
       namedExports: {
         react: Object.keys(react),
-        tslib: Object.keys(tslib),
         'react-dom': Object.keys(reactDom),
         '@material-ui/utils': Object.keys(muiUtils),
         'react-is': Object.keys(reactIs),
+        '../react/node_modules/react/index.js': Object.keys(react)
       }
     }),
 
@@ -57,18 +56,35 @@ export default {
     }),
 
     // Resolve source maps to the original source
-    sourceMaps(),
-
-    ...(SERVE
-      ? [
-          serve({
-            contentBase: 'dist',
-            port: 1269,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-            }
-          })
-        ]
-      : [])
+    sourceMaps()
   ]
 }
+
+export default [
+  // defaultConfig,
+  Object.assign(defaultConfig, {
+    input: 'src/content-loader.tsx',
+    output: [
+      {
+        file: 'dist/content-loader.umd.js',
+        name: camelCase(libraryName),
+        format: 'umd',
+        sourcemap: true
+      },
+      { file: 'dist/content-loader.esm.js', format: 'es', sourcemap: true }
+    ],
+    plugins: defaultConfig.plugins.concat(
+      SERVE
+        ? [
+            serve({
+              contentBase: 'dist',
+              port: 1269,
+              headers: {
+                'Access-Control-Allow-Origin': '*'
+              }
+            })
+          ]
+        : []
+    )
+  })
+]
