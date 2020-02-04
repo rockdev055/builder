@@ -1,6 +1,6 @@
 {
   "name": "@builder.io/sdk",
-  "version": "1.0.60-alpha.4",
+  "version": "1.0.60-alpha.2",
   "unpkg": "./dist/index.browser.js",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
@@ -45,7 +45,7 @@
     "rollup-plugin-typescript": "^0.8.1",
     "rollup-plugin-typescript2": "^0.13.0",
     "rollup-plugin-uglify": "^3.0.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.3"
   },
   "dependencies": {
     "node-fetch": "^2.2.0",

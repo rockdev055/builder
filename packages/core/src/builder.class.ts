@@ -29,9 +29,14 @@ const urlParser = {
 
     // IE 11 pathname handling workaround
     // (IE omits preceeding '/', unlike other browsers)
-    if (out.pathname && typeof out.pathname === 'string' && out.pathname.indexOf('/') !== 0) {
+    if (
+      (out.pathname || out.pathname === '') &&
+      typeof out.pathname === 'string' &&
+      out.pathname.indexOf('/') !== 0
+    ) {
       out.pathname = '/' + out.pathname;
     }
+
     return out;
   },
 };
@@ -103,23 +108,21 @@ export interface ParamsMap {
   [key: string]: any;
 }
 
-interface EventData {
-  contentId?: string;
-  ownerId: string;
-  variationId?: string;
-  userAttributes?: any;
-  targetSelector?: string;
-  targetBuilderElement?: string;
-  unique?: boolean;
-  metadata?: any | string;
-  meta?: any | string;
-  sessionId?: string;
-  amount?: number;
-}
 // TODO: share interfaces with API
 interface Event {
-  type: string;
-  data: EventData;
+  type: 'click' | 'impression' | 'conversion';
+  data: {
+    contentId?: string;
+    ownerId: string;
+    variationId?: string;
+    userAttributes?: any;
+    targetSelector?: string;
+    targetBuilderElement?: string;
+    unique?: boolean;
+    metadata?: any | string;
+    sessionId?: string;
+    amount?: number;
+  };
 }
 
 export interface UserAttributes {
@@ -620,23 +623,20 @@ export class Builder {
   }
   userAgent: string = (typeof navigator === 'object' && navigator.userAgent) || '';
 
-  track(eventName: string, properties: Partial<EventData> = {}) {
+  track(eventName: string, properties: any = {}) {
     // TODO: queue up track requests and fire them off when canTrack set to true - otherwise may get lots of clicks with no impressions
     if (isIframe || !isBrowser) {
       return;
     }
     // batch events
     this.eventsQueue.push({
-      type: eventName,
+      type: 'impression',
       data: {
-        ...omit(properties, 'meta'),
         metadata: {
           sdkVersion: Builder.VERSION,
           url: location.href,
-          ...properties.meta,
-          ...properties.metadata,
         },
-        ownerId: this.apiKey!,
+        ...properties,
         userAttributes: this.getUserAttributes(),
         sessionId: this.sessionId,
         // TODO: user properties like visitor id, location path, device, etc
@@ -698,8 +698,7 @@ export class Builder {
     this.throttledClearEventsQueue();
   }
 
-  // Multiple content IDs?
-  trackConversion(amount?: number, contentId?: string) {
+  trackConversion(amount?: number) {
     if (isIframe || !isBrowser) {
       return;
     }
@@ -1198,11 +1197,25 @@ export class Builder {
 
   // TODO: allow adding location object as property and/or in constructor
   getLocation(): Url {
+    let parsedLocation: any = {};
+
+    // in ssr mode
     if (this.request) {
-      return parse(this.request.url);
+      parsedLocation = parse(this.request.url);
     }
 
-    return (typeof location === 'object' && parse(location.href)) || ({} as any);
+    // in the browser
+    if (typeof location === 'object') {
+      parsedLocation = parse(location.href);
+    }
+
+    // IE11 bug with parsed path being empty string
+    // causes issues with our user targeting
+    if (parsedLocation.pathname === '') {
+      parsedLocation.pathname = '/';
+    }
+
+    return parsedLocation;
   }
 
   getUserAttributes(userAgent = this.userAgent || '') {
@@ -1703,14 +1716,14 @@ export class Builder {
     return this.setCookie(`${this.testCookiePrefix}.${contentId}`, variationId, future);
   }
 
-  getCookie(name: string): any {
+  protected getCookie(name: string): any {
     if (this.cookies) {
       return this.cookies.get(name);
     }
     return Builder.isBrowser && getCookie(name);
   }
 
-  setCookie(name: string, value: any, expires?: Date) {
+  protected setCookie(name: string, value: any, expires?: Date) {
     if (this.cookies) {
       return this.cookies.set(name, value, {
         expires,
