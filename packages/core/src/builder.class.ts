@@ -108,21 +108,23 @@ export interface ParamsMap {
   [key: string]: any;
 }
 
+interface EventData {
+  contentId?: string;
+  ownerId: string;
+  variationId?: string;
+  userAttributes?: any;
+  targetSelector?: string;
+  targetBuilderElement?: string;
+  unique?: boolean;
+  metadata?: any | string;
+  meta?: any | string;
+  sessionId?: string;
+  amount?: number;
+}
 // TODO: share interfaces with API
 interface Event {
-  type: 'click' | 'impression' | 'conversion';
-  data: {
-    contentId?: string;
-    ownerId: string;
-    variationId?: string;
-    userAttributes?: any;
-    targetSelector?: string;
-    targetBuilderElement?: string;
-    unique?: boolean;
-    metadata?: any | string;
-    sessionId?: string;
-    amount?: number;
-  };
+  type: string;
+  data: EventData;
 }
 
 export interface UserAttributes {
@@ -623,20 +625,23 @@ export class Builder {
   }
   userAgent: string = (typeof navigator === 'object' && navigator.userAgent) || '';
 
-  track(eventName: string, properties: any = {}) {
+  track(eventName: string, properties: Partial<EventData> = {}) {
     // TODO: queue up track requests and fire them off when canTrack set to true - otherwise may get lots of clicks with no impressions
     if (isIframe || !isBrowser) {
       return;
     }
     // batch events
     this.eventsQueue.push({
-      type: 'impression',
+      type: eventName,
       data: {
+        ...omit(properties, 'meta'),
         metadata: {
           sdkVersion: Builder.VERSION,
           url: location.href,
+          ...properties.meta,
+          ...properties.metadata,
         },
-        ...properties,
+        ownerId: this.apiKey!,
         userAttributes: this.getUserAttributes(),
         sessionId: this.sessionId,
         // TODO: user properties like visitor id, location path, device, etc
@@ -698,7 +703,8 @@ export class Builder {
     this.throttledClearEventsQueue();
   }
 
-  trackConversion(amount?: number) {
+  // Multiple content IDs?
+  trackConversion(amount?: number, contentId?: string) {
     if (isIframe || !isBrowser) {
       return;
     }
@@ -1716,14 +1722,14 @@ export class Builder {
     return this.setCookie(`${this.testCookiePrefix}.${contentId}`, variationId, future);
   }
 
-  protected getCookie(name: string): any {
+  getCookie(name: string): any {
     if (this.cookies) {
       return this.cookies.get(name);
     }
     return Builder.isBrowser && getCookie(name);
   }
 
-  protected setCookie(name: string, value: any, expires?: Date) {
+  setCookie(name: string, value: any, expires?: Date) {
     if (this.cookies) {
       return this.cookies.set(name, value, {
         expires,
