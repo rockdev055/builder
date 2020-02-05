@@ -14,7 +14,6 @@ import serverOnlyRequire from './functions/server-only-require.function';
 
 export type Url = any;
 export const isReactNative = typeof navigator === 'object' && navigator.product === 'ReactNative';
-export const validEnvList = ['production', 'qa', 'development', 'dev', 'cdn-qa'];
 
 const urlParser = {
   parse(url: string) {
@@ -533,7 +532,7 @@ export class Builder {
     });
   }
 
-  env: string = 'production';
+  env: 'production' | 'qa' | 'development' | 'dev' | 'cdn-qa' | string = 'production';
 
   protected isUsed = false;
   sessionId = this.getSessionId();
@@ -964,16 +963,13 @@ export class Builder {
         frameEditing,
         params: overrideParams,
       } = builder;
-
       if (userAttributes) {
         this.setUserAttributes(userAttributes);
       }
-
       if (overrides) {
         this.overrides = overrides;
       }
-
-      if (validEnvList.indexOf(env || api) > -1) {
+      if (env || api) {
         this.env = env || api;
       }
 
@@ -987,11 +983,9 @@ export class Builder {
       if (host) {
         this.overrideHost = host;
       }
-
       if (cachebust) {
         this.cachebust = true;
       }
-
       if (noCache) {
         this.noCache = true;
       }
