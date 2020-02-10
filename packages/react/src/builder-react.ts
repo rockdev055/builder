@@ -1,4 +1,3 @@
-import { version } from '../package.json'
 import { builder, Builder } from '@builder.io/sdk'
 export { BuilderElement } from '@builder.io/sdk'
 
@@ -52,8 +51,9 @@ if (typeof window !== 'undefined') {
       type: 'builder.isReactSdk',
       data: {
         value: true,
-        supportsPatchUpdates: true,
-        priorVersion: version
+        supportsPatchUpdates: true
+        // TODO: version
+        // version: pkg.version
       }
     },
     '*'

@@ -8,9 +8,6 @@ export const applyPatchWithMinimalMutationChain = (
   }
   const { path, op, value } = patch
   const pathArr: string[] = path.split(/\//)
-  if (pathArr[0] === '') {
-    pathArr.shift()
-  }
 
   const newObj = preserveRoot ? obj : { ...obj }
   let objPart = newObj
@@ -26,7 +23,7 @@ export const applyPatchWithMinimalMutationChain = (
           if (property === '-') {
             objPart.push(value)
           } else {
-            objPart.splice(index, 0, value)
+            objPart.splice(index - 1, 0, value)
           }
         } else {
           objPart[property] = value
@@ -40,16 +37,13 @@ export const applyPatchWithMinimalMutationChain = (
         }
       }
     } else {
-      const nextProperty = pathArr[i + 1];
-      const newPart =
-        Object(objPart[property]) === objPart[property]
+      objPart = objPart[property] = {
+        ...(Object(objPart[property]) === objPart[property]
           ? objPart[property]
-          : String(Number(nextProperty)) === nextProperty
+          : String(Number(property)) === property
           ? []
-          : {}
-      objPart = objPart[property] = Array.isArray(newPart)
-        ? [...newPart]
-        : { ...newPart }
+          : {})
+      }
     }
   }
 
