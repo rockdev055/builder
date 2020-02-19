@@ -1,6 +1,6 @@
 import React from 'react';
-import { Parallax, Background } from 'react-parallax';
-import { BuilderBlockComponent, Image } from '@builder.io/react';
+import { Parallax } from 'react-parallax';
+import { BuilderBlockComponent } from '@builder.io/react';
 import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles(() => ({
@@ -15,16 +15,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-/**
- * Hero component with dynamic children
- */
 export const HeroWithEditableChildren = props => {
-  const { image, parallaxStrength, height } = props;
+  const { image, strength, height } = props;
 
   const classes = useStyles();
 
   return (
-    <Parallax blur={{ min: -20, max: 20 }} strength={parallaxStrength}>
+    <Parallax blur={{ min: -20, max: 20 }} bgImage={image} strength={strength}>
       <div style={{ minHeight: height }} className={classes.container}>
         <div className={classes.wrapper}>
           {/*
@@ -36,10 +33,6 @@ export const HeroWithEditableChildren = props => {
           ))}
         </div>
       </div>
-      <Background className="custom-bg">
-        {/* Builder optimized image with srcset, lazy, etc */}
-        <Image image={image} />
-      </Background>
     </Parallax>
   );
 };

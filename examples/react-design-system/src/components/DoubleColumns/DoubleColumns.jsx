@@ -23,7 +23,7 @@ const useStyles = makeStyles({
   },
   sectionTitle: {
     textAlign: 'center',
-    padding: 30,
+    padding: '5px',
   },
   imageContainer: {
     position: 'relative',
