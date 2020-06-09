@@ -414,7 +414,6 @@ export const Image = withBuilder(ImageComponent, {
     {
       name: 'lazy',
       type: 'boolean',
-      defaultValue: true,
       hideFromUI: true
     },
     {

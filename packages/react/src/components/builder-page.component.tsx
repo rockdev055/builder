@@ -661,7 +661,7 @@ export class BuilderPage extends React.Component<
           str += `
 @font-face {
   font-family: "${family}";
-  src: url('${weightUrl}') format('woff2');
+  src: local("${family}"), url('${weightUrl}') format('woff2');
   font-display: fallback;
   font-weight: ${weight};
 }

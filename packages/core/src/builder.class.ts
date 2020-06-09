@@ -1,5 +1,4 @@
 import './polyfills/custom-event-polyfill';
-
 import { IncomingMessage, ServerResponse } from 'http';
 import { nextTick } from './functions/next-tick.function';
 import { QueryString } from './classes/query-string.class';
@@ -271,10 +270,6 @@ export interface Component {
    */
   name: string;
   description?: string;
-  /**
-   * Link to a documentation page for this component
-   */
-  docsLink: string;
   image?: string;
   /**
    * Input schema for your component for users to fill in the options
@@ -429,13 +424,9 @@ export class Builder {
           info,
         },
       };
-      try {
-        parent.postMessage(message, '*');
-        if (parent !== window) {
-          window.postMessage(message, '*');
-        }
-      } catch (err) {
-        console.debug('Could not postmessage', err);
+      parent.postMessage(message, '*');
+      if (parent !== window) {
+        window.postMessage(message, '*');
       }
     }
     this.registryChange.next(this.registry);
