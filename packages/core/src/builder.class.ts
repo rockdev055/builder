@@ -1,4 +1,5 @@
 import './polyfills/custom-event-polyfill';
+
 import { IncomingMessage, ServerResponse } from 'http';
 import { nextTick } from './functions/next-tick.function';
 import { QueryString } from './classes/query-string.class';
@@ -424,9 +425,13 @@ export class Builder {
           info,
         },
       };
-      parent.postMessage(message, '*');
-      if (parent !== window) {
-        window.postMessage(message, '*');
+      try {
+        parent.postMessage(message, '*');
+        if (parent !== window) {
+          window.postMessage(message, '*');
+        }
+      } catch (err) {
+        console.debug('Could not postmessage', err);
       }
     }
     this.registryChange.next(this.registry);
